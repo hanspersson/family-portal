@@ -40,10 +40,14 @@ def _render_markdown(text: str) -> str:
     return nh3.clean(html, attributes=_ALLOWED_ATTRIBUTES)
 
 
+# Slugs that collide with the blueprint's own fixed routes (/wiki/new).
+_RESERVED_SLUGS = {"new"}
+
+
 def _unique_slug(db: Session, household_id: int, base_slug: str) -> str:
     slug = base_slug
     suffix = 2
-    while (
+    while slug in _RESERVED_SLUGS or (
         db.query(WikiPage)
         .filter(WikiPage.household_id == household_id, WikiPage.slug == slug)
         .first()

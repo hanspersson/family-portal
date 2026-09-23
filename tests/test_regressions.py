@@ -65,3 +65,10 @@ def test_duplicate_username_shows_error_not_500(client):
     response = _add_member(client, "kid")
     assert response.status_code == 400
     assert b"already taken" in response.data
+
+
+def test_wiki_page_titled_new_is_reachable(client):
+    _sign_up(client)
+    response = client.post("/wiki/new", data={"title": "New", "content_markdown": "fresh"})
+    assert response.location.endswith("/wiki/new-2")
+    assert b"fresh" in client.get("/wiki/new-2").data
