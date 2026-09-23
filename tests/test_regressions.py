@@ -36,3 +36,24 @@ def test_non_admin_cannot_add_members(client):
     page = client.get("/members")
     assert b"@intruder" not in page.data
     assert b"Add a family member" not in page.data
+
+
+def test_wiki_strips_scripts_but_keeps_formatting(client):
+    _sign_up(client)
+    client.post(
+        "/wiki/new",
+        data={
+            "title": "Evil",
+            "content_markdown": (
+                "## Heading\n\n> quoted\n\n"
+                '<script>alert(1)</script><img src="x" onerror="alert(2)">'
+                "[link](javascript:alert(3))"
+            ),
+        },
+    )
+    page = client.get("/wiki/evil").data
+    assert b"<script>" not in page
+    assert b"onerror" not in page
+    assert b"javascript:" not in page
+    assert b'<h2 id="heading">' in page
+    assert b"<blockquote>" in page

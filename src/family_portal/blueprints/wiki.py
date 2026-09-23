@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 
 import markdown as markdown_lib
+import nh3
 from flask import Blueprint, abort, redirect, render_template, request, url_for
 from sqlalchemy.orm import Session
 
@@ -18,8 +19,25 @@ def _slugify(title: str) -> str:
     return slug or "page"
 
 
+# nh3's default allowlist, plus heading ids (added by the `toc` extension
+# so headings can be linked to).
+_ALLOWED_ATTRIBUTES = {
+    **nh3.ALLOWED_ATTRIBUTES,
+    **{h: nh3.ALLOWED_ATTRIBUTES.get(h, set()) | {"id"} for h in ("h1", "h2", "h3", "h4", "h5", "h6")},
+}
+
+
 def _render_markdown(text: str) -> str:
-    return markdown_lib.markdown(text, extensions=["extra", "sane_lists", "toc"])
+    """Render wiki markdown to HTML that is safe to output unescaped.
+
+    Markdown passes raw HTML through, and the template marks the result
+    `| safe`, so without sanitizing any family member could put a
+    <script> (or an onerror= handler) on a page that runs in everyone
+    else's logged-in browser. nh3 strips scripts, event handlers and
+    javascript: URLs while keeping normal formatting.
+    """
+    html = markdown_lib.markdown(text, extensions=["extra", "sane_lists", "toc"])
+    return nh3.clean(html, attributes=_ALLOWED_ATTRIBUTES)
 
 
 def _unique_slug(db: Session, household_id: int, base_slug: str) -> str:
