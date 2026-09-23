@@ -11,6 +11,7 @@
   {% endfor %}
 </ul>
 
+{% if user.is_admin %}
 <section class="card">
   <h2>Add a family member</h2>
   <form action="/members" method="post" class="stacked-form">
@@ -29,4 +30,7 @@
     <button type="submit">Add</button>
   </form>
 </section>
+{% else %}
+<p class="muted">Ask an admin to add new family members.</p>
+{% endif %}
 {% endblock %}

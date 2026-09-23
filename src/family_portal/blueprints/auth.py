@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from flask import Blueprint, redirect, render_template, request, session, url_for
+from flask import Blueprint, abort, redirect, render_template, request, session, url_for
 
 from family_portal.database import get_db
 from family_portal.deps import get_current_user, login_required
@@ -93,6 +93,10 @@ def members_page():
 @login_required
 def add_member():
     user = get_current_user()
+    if not user.is_admin:
+        # Only admins create logins -- otherwise any family member (e.g. a
+        # child's account) could mint new accounts, including admin ones.
+        abort(403)
     db = get_db()
     form = request.form
     new_user = User(
