@@ -92,6 +92,12 @@ Not yet done: a manual click-through in a real browser.
 
 ## Conventions to keep
 
+- **One commit per task step.** The project is a local git repo
+  (branch `main`, no remote). Every completed task step gets its own
+  commit, with a message that describes that step, rather than
+  batching several changes into one commit. Run `uv run pytest` before
+  committing code changes.
+
 - Type hints on all function signatures (matches the user's stated
   preference from their other Python project).
 - `from __future__ import annotations` at the top of every module.
