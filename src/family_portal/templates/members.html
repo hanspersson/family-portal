@@ -14,6 +14,7 @@
 {% if user.is_admin %}
 <section class="card">
   <h2>Add a family member</h2>
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
   <form action="/members" method="post" class="stacked-form">
     <label>Name
       <input type="text" name="display_name" required />

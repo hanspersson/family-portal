@@ -57,3 +57,11 @@ def test_wiki_strips_scripts_but_keeps_formatting(client):
     assert b"javascript:" not in page
     assert b'<h2 id="heading">' in page
     assert b"<blockquote>" in page
+
+
+def test_duplicate_username_shows_error_not_500(client):
+    _sign_up(client)
+    _add_member(client, "kid")
+    response = _add_member(client, "kid")
+    assert response.status_code == 400
+    assert b"already taken" in response.data

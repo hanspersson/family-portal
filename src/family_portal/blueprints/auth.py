@@ -4,6 +4,8 @@ import re
 
 from flask import Blueprint, abort, redirect, render_template, request, session, url_for
 
+from sqlalchemy.exc import IntegrityError
+
 from family_portal.database import get_db
 from family_portal.deps import get_current_user, login_required
 from family_portal.models import Household, User
@@ -81,12 +83,16 @@ def logout():
 @bp.route("/members", methods=["GET"])
 @login_required
 def members_page():
+    return _render_members()
+
+
+def _render_members(error: str | None = None, status: int = 200):
     user = get_current_user()
     db = get_db()
     members = (
         db.query(User).filter(User.household_id == user.household_id).order_by(User.id).all()
     )
-    return render_template("members.html", user=user, members=members)
+    return render_template("members.html", user=user, members=members, error=error), status
 
 
 @bp.route("/members", methods=["POST"])
@@ -99,13 +105,23 @@ def add_member():
         abort(403)
     db = get_db()
     form = request.form
+    username = _slugify_username(form["username"])
+    taken_error = f"The username \"{username}\" is already taken."
+    if db.query(User).filter(User.username == username).first() is not None:
+        return _render_members(error=taken_error, status=400)
+
     new_user = User(
         household_id=user.household_id,
-        username=_slugify_username(form["username"]),
+        username=username,
         display_name=form["display_name"].strip(),
         password_hash=hash_password(form["password"]),
         is_admin=bool(form.get("is_admin")),
     )
     db.add(new_user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # Lost a race with a concurrent add of the same username.
+        db.rollback()
+        return _render_members(error=taken_error, status=400)
     return redirect(url_for("auth.members_page"))
