@@ -86,7 +86,10 @@ def delete_event(event_id: int):
     user = get_current_user()
     db = get_db()
     event = db.get(Event, event_id)
-    if event is not None and event.household_id == user.household_id:
-        db.delete(event)
-        db.commit()
-    return redirect(url_for("calendar.list_events"))
+    if event is None or event.household_id != user.household_id:
+        return redirect(url_for("calendar.list_events"))
+    # Return to the month the event was in, not the current month.
+    month = event.start_at.strftime("%Y-%m")
+    db.delete(event)
+    db.commit()
+    return redirect(url_for("calendar.list_events", month=month))

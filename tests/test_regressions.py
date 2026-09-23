@@ -154,3 +154,11 @@ def test_setup_rejects_invalid_username(client):
     )
     assert response.status_code == 400
     assert b"may only use" in response.data
+
+
+def test_delete_event_returns_to_its_month(client):
+    _sign_up(client)
+    client.post("/calendar/new", data={"title": "Far away", "start_at": "2031-03-10T09:00"})
+    response = client.post("/calendar/1/delete")
+    assert response.location.endswith("/calendar?month=2031-03")
+    assert b"Far away" not in client.get("/calendar?month=2031-03").data
