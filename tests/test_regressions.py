@@ -117,3 +117,40 @@ def test_filesize_formatting():
     assert filesize(1536) == "1.5 KB"
     assert filesize(5 * 1024 * 1024) == "5.0 MB"
     assert filesize(3 * 1024**4) == "3072.0 GB"
+
+
+def test_usernames_normalized_the_same_everywhere(client):
+    client.post(
+        "/setup",
+        data={
+            "household_name": "Fam",
+            "display_name": "Ada",
+            "username": "  Ada.L ",
+            "password": "correct-horse-battery",
+        },
+    )
+    _add_member(client, "Bea_K")
+    members = client.get("/members").data
+    assert b"@ada.l" in members
+    assert b"@bea_k" in members
+
+    client.post("/logout")
+    response = _login(client, "BEA_K")
+    assert response.location in ("/", "http://localhost/")
+
+
+def test_invalid_username_rejected_with_message(client):
+    _sign_up(client)
+    response = _add_member(client, "bad name!")
+    assert response.status_code == 400
+    assert b"may only use" in response.data
+    assert b"badname" not in client.get("/members").data
+
+
+def test_setup_rejects_invalid_username(client):
+    response = client.post(
+        "/setup",
+        data={"household_name": "Fam", "display_name": "Ada", "username": "a d a", "password": "x" * 10},
+    )
+    assert response.status_code == 400
+    assert b"may only use" in response.data

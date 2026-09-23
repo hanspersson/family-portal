@@ -14,8 +14,20 @@ from family_portal.security import hash_password, verify_password
 bp = Blueprint("auth", __name__)
 
 
-def _slugify_username(name: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "", name.lower()) or "user"
+_USERNAME_RE = re.compile(r"[a-z0-9._-]+")
+_USERNAME_RULES = "Usernames may only use letters, digits, '.', '_' and '-'."
+
+
+def _normalize_username(raw: str) -> str:
+    """The one place usernames are normalized -- setup, adding a member
+    and login must all agree, or someone can't log in with the name they
+    were given. Only case/whitespace is normalized; anything else invalid
+    is rejected (see _USERNAME_RE) rather than silently rewritten."""
+    return raw.strip().lower()
+
+
+def _valid_username(username: str) -> bool:
+    return _USERNAME_RE.fullmatch(username) is not None
 
 
 @bp.route("/login", methods=["GET"])
@@ -35,13 +47,17 @@ def setup():
         return redirect(url_for("auth.login_page"))
 
     form = request.form
+    username = _normalize_username(form["username"])
+    if not _valid_username(username):
+        return render_template("setup.html", error=_USERNAME_RULES), 400
+
     household = Household(name=form["household_name"].strip())
     db.add(household)
     db.flush()
 
     user = User(
         household_id=household.id,
-        username=form["username"].strip().lower(),
+        username=username,
         display_name=form["display_name"].strip(),
         password_hash=hash_password(form["password"]),
         is_admin=True,
@@ -57,7 +73,7 @@ def setup():
 @bp.route("/login", methods=["POST"])
 def login():
     db = get_db()
-    username = request.form["username"].strip().lower()
+    username = _normalize_username(request.form["username"])
     password = request.form["password"]
     next_path = request.form.get("next", "/")
 
@@ -105,7 +121,9 @@ def add_member():
         abort(403)
     db = get_db()
     form = request.form
-    username = _slugify_username(form["username"])
+    username = _normalize_username(form["username"])
+    if not _valid_username(username):
+        return _render_members(error=_USERNAME_RULES, status=400)
     taken_error = f"The username \"{username}\" is already taken."
     if db.query(User).filter(User.username == username).first() is not None:
         return _render_members(error=taken_error, status=400)

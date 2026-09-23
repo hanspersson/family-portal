@@ -4,6 +4,7 @@
 <div class="auth-box">
   <h1>Welcome</h1>
   <p>Let's set up your family portal. This creates your household and your admin account.</p>
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
   <form action="/setup" method="post" class="stacked-form">
     <label>Family name
       <input type="text" name="household_name" placeholder="The Perssons" required />
