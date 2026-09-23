@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 from flask import Blueprint, render_template
 
 from family_portal.database import get_db
 from family_portal.deps import get_current_user, login_required
+from family_portal.formatting import local_now
 from family_portal.models import Event, FileItem, WikiPage
 
 bp = Blueprint("dashboard", __name__)
@@ -16,7 +17,9 @@ bp = Blueprint("dashboard", __name__)
 def home():
     user = get_current_user()
     db = get_db()
-    now = datetime.now(timezone.utc)
+    # Events are stored as naive local wall-clock times, so compare
+    # against local time, not UTC (see formatting.py).
+    now = local_now()
 
     upcoming_events = (
         db.query(Event)

@@ -6,7 +6,7 @@
   {% for rev in page.revisions %}
   <li>
     <strong>{{ rev.title }}</strong>
-    <span class="muted">{{ rev.created_at.strftime('%d %b %Y, %H:%M') }} by {{ rev.edited_by.display_name }}</span>
+    <span class="muted">{{ (rev.created_at | localtime).strftime('%d %b %Y, %H:%M') }} by {{ rev.edited_by.display_name }}</span>
   </li>
   {% else %}
   <li class="muted">No history yet.</li>

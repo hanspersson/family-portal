@@ -72,3 +72,38 @@ def test_wiki_page_titled_new_is_reachable(client):
     response = client.post("/wiki/new", data={"title": "New", "content_markdown": "fresh"})
     assert response.location.endswith("/wiki/new-2")
     assert b"fresh" in client.get("/wiki/new-2").data
+
+
+def test_timestamps_shown_in_configured_timezone(client):
+    from datetime import datetime, timezone
+
+    from family_portal.formatting import localtime
+
+    client.application.config["TIMEZONE"] = "Europe/Stockholm"
+    with client.application.app_context():
+        # Stored UTC comes back naive; 17:30 UTC is 19:30 in Stockholm (CEST).
+        shown = localtime(datetime(2026, 9, 23, 17, 30))
+        assert shown.strftime("%H:%M") == "19:30"
+        assert localtime(datetime(2026, 9, 23, 17, 30, tzinfo=timezone.utc)) == shown
+
+
+def test_dashboard_upcoming_uses_local_wall_clock(client):
+    from datetime import timedelta
+
+    from family_portal.formatting import local_now
+
+    # Pick a zone far from UTC so a UTC-vs-local mix-up would be visible.
+    client.application.config["TIMEZONE"] = "Pacific/Kiritimati"  # UTC+14
+    _sign_up(client)
+    with client.application.app_context():
+        now = local_now()
+    past = now - timedelta(hours=3)
+    soon = now + timedelta(hours=2)
+    for title, start in (("Already over", past), ("Coming up", soon)):
+        client.post(
+            "/calendar/new",
+            data={"title": title, "start_at": start.strftime("%Y-%m-%dT%H:%M")},
+        )
+    page = client.get("/").data
+    assert b"Coming up" in page
+    assert b"Already over" not in page

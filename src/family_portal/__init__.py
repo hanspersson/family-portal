@@ -9,6 +9,7 @@ from flask import Flask
 
 from family_portal.config import Config
 from family_portal.database import init_db, init_engine
+from family_portal.formatting import register_filters
 
 PACKAGE_DIR = Path(__file__).resolve().parent
 
@@ -23,6 +24,7 @@ def create_app(config_overrides: dict | None = None) -> Flask:
     if config_overrides:
         app.config.update(config_overrides)
 
+    register_filters(app)
     init_engine(app)
     with app.app_context():
         init_db(app)

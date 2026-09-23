@@ -8,7 +8,7 @@
     <a class="button-link" href="/wiki/{{ page.slug }}/history">History</a>
   </div>
 </div>
-<p class="muted">Last updated {{ page.updated_at.strftime('%d %b %Y, %H:%M') }} by {{ page.updated_by.display_name }}</p>
+<p class="muted">Last updated {{ (page.updated_at | localtime).strftime('%d %b %Y, %H:%M') }} by {{ page.updated_by.display_name }}</p>
 <article class="prose">
   {{ content_html | safe }}
 </article>

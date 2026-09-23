@@ -7,6 +7,7 @@ from flask import Blueprint, redirect, render_template, request, url_for
 
 from family_portal.database import get_db
 from family_portal.deps import get_current_user, login_required
+from family_portal.formatting import local_now
 from family_portal.models import Event
 
 bp = Blueprint("calendar", __name__, url_prefix="/calendar")
@@ -18,7 +19,7 @@ def _parse_month(month_str: str | None) -> date:
             return datetime.strptime(month_str, "%Y-%m").date().replace(day=1)
         except ValueError:
             pass
-    return date.today().replace(day=1)
+    return local_now().date().replace(day=1)
 
 
 @bp.route("")

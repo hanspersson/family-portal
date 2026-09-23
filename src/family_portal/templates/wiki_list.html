@@ -9,7 +9,7 @@
   {% for p in pages %}
   <li>
     <a href="/wiki/{{ p.slug }}"><strong>{{ p.title }}</strong></a>
-    <span class="muted">updated {{ p.updated_at.strftime('%d %b %Y') }} by {{ p.updated_by.display_name }}</span>
+    <span class="muted">updated {{ (p.updated_at | localtime).strftime('%d %b %Y') }} by {{ p.updated_by.display_name }}</span>
   </li>
   {% else %}
   <li class="muted">No pages yet &mdash; start with a "House rules" or "Emergency contacts" page.</li>

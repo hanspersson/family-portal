@@ -43,6 +43,11 @@ class Config:
             seconds=int(os.environ.get("FAMILY_PORTAL_SESSION_MAX_AGE", 60 * 60 * 24 * 30))
         )
 
+        # IANA name (e.g. "Europe/Stockholm") used to display timestamps.
+        # Unset: the server's own local timezone -- set it if the host or
+        # container runs on UTC but the family doesn't.
+        self.TIMEZONE = os.environ.get("FAMILY_PORTAL_TIMEZONE") or None
+
         # Flask enforces this itself (413 response) -- default: 250 MB.
         self.MAX_CONTENT_LENGTH = int(
             os.environ.get("FAMILY_PORTAL_MAX_UPLOAD_SIZE", 250 * 1024 * 1024)
