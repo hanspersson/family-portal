@@ -162,3 +162,9 @@ def test_delete_event_returns_to_its_month(client):
     response = client.post("/calendar/1/delete")
     assert response.location.endswith("/calendar?month=2031-03")
     assert b"Far away" not in client.get("/calendar?month=2031-03").data
+
+
+def test_favicon_linked_and_served(client):
+    page = client.get("/login").data
+    assert b'rel="icon" href="/static/favicon.svg"' in page
+    assert client.get("/static/favicon.svg").status_code == 200
