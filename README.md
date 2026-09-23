@@ -78,6 +78,9 @@ uv sync --group prod
 uv run gunicorn -w 2 -b 0.0.0.0:8000 family_portal.wsgi:app
 ```
 
+Set `FAMILY_PORTAL_TIMEZONE` (e.g. `Europe/Stockholm`) in `.env` if the
+server runs on UTC but you don't.
+
 Then open `http://<server-ip>:8000` from any device on your network —
 the first visit walks you through creating the family and your account.
 

@@ -48,6 +48,8 @@ src/family_portal/
                                the full data-model writeup
   security.py                  hash_password / verify_password only
                                  (session signing is Flask's, not custom)
+  formatting.py                  Jinja filters (localtime, filesize) +
+                                   local_now(); see "Times" below
   deps.py                        get_current_user() + @login_required
                                    decorator (redirects to /login, since
                                    these are HTML pages, not a JSON API)
@@ -59,7 +61,8 @@ src/family_portal/
     files.py         upload/list/download/delete
   templates/    one Jinja2 template per page, extending base.html
   static/style.css  hand-written, no framework/CDN
-tests/          pytest + Flask test client; one smoke test per feature
+tests/          pytest + Flask test client: test_smoke.py (one per
+                  feature) + test_regressions.py (one per fixed bug)
 ```
 
 ### Data model / sharing model
@@ -72,9 +75,21 @@ sharing later (e.g. a `visible_to` join table) without restructuring.
 
 Login is invite-only from inside the app: the first visit to `/login`
 with zero users in the DB shows a setup form that creates the household
-+ the first (admin) account; after that, an admin adds further family
-members from `/members`. There's no public sign-up and no password-reset
-flow (a home server usually has no outbound mail configured for that).
++ the first (admin) account; after that, an admin (only admins --
+enforced server-side) adds further family members from `/members`.
+Usernames are normalized in one place (`_normalize_username` in
+`auth.py`: trim + lowercase) and must match `[a-z0-9._-]+`. There's no
+public sign-up and no password-reset flow (a home server usually has no
+outbound mail configured for that).
+
+### Times
+
+SQLite drops timezone offsets. Bookkeeping timestamps (`created_at`,
+`updated_at`, `uploaded_at`) are written as UTC and come back naive UTC:
+display them through the `localtime` Jinja filter (`formatting.py`).
+Calendar event times are naive *local* wall-clock times as typed in and
+are displayed as-is; compare them against `local_now()`, never UTC.
+Display timezone: `FAMILY_PORTAL_TIMEZONE`, default the server's own.
 
 ## Status
 
@@ -88,7 +103,14 @@ which broke every signup/login. `security.py` now calls `bcrypt`
 directly and truncates to bcrypt's 72-byte limit explicitly; existing
 `$2b$` hashes stay compatible.
 
-Not yet done: a manual click-through in a real browser.
+A headless-Chrome click-through (setup, login, calendar, wiki, files,
+members, non-admin account) was then done on 2026-09-23. The bugs it
+found are fixed, each with a test in `tests/test_regressions.py`: any
+member could add members (now admin-only), stored XSS via wiki markdown
+(output now sanitized with `nh3`), 500 on duplicate usernames,
+unreachable wiki page titled "New", UTC timestamps shown as local time,
+"0.0 KB" file sizes, inconsistent username normalization, and delete
+redirecting to the wrong month. 20 tests pass.
 
 ## Conventions to keep
 
@@ -113,13 +135,11 @@ Not yet done: a manual click-through in a real browser.
 
 ## Suggested next steps
 
-1. Manual click-through in a browser (setup, calendar, wiki, files,
-   members) to catch anything the smoke tests don't cover.
-2. Reverse proxy + HTTPS (Caddy/nginx/Traefik) or a Tailscale/VPN setup
+1. Reverse proxy + HTTPS (Caddy/nginx/Traefik) or a Tailscale/VPN setup
    if it'll be reachable outside the home network — it currently serves
    plain HTTP.
-3. iCal export/import for the calendar.
-4. Per-item sharing (private notes/files visible to only some family
+2. iCal export/import for the calendar.
+3. Per-item sharing (private notes/files visible to only some family
    members) — the household-scoping groundwork is already there.
-5. Regular backups of `data/family_portal.db` + `uploads/` together
+4. Regular backups of `data/family_portal.db` + `uploads/` together
    (that's the entire state of the app).
