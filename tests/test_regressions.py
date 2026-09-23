@@ -107,3 +107,13 @@ def test_dashboard_upcoming_uses_local_wall_clock(client):
     page = client.get("/").data
     assert b"Coming up" in page
     assert b"Already over" not in page
+
+
+def test_filesize_formatting():
+    from family_portal.formatting import filesize
+
+    assert filesize(1) == "1 byte"
+    assert filesize(20) == "20 bytes"
+    assert filesize(1536) == "1.5 KB"
+    assert filesize(5 * 1024 * 1024) == "5.0 MB"
+    assert filesize(3 * 1024**4) == "3072.0 GB"

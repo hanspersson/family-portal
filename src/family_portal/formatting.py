@@ -36,5 +36,18 @@ def localtime(value: datetime) -> datetime:
     return value.astimezone(display_tz())
 
 
+def filesize(num_bytes: int) -> str:
+    """Human-readable size: "20 bytes", "3.4 KB", "1.2 MB" (1 KB = 1024 B)."""
+    if num_bytes < 1024:
+        return f"{num_bytes} byte{'' if num_bytes == 1 else 's'}"
+    size = num_bytes / 1024
+    for unit in ("KB", "MB"):
+        if size < 1024:
+            return f"{size:.1f} {unit}"
+        size /= 1024
+    return f"{size:.1f} GB"
+
+
 def register_filters(app: Flask) -> None:
     app.add_template_filter(localtime, "localtime")
+    app.add_template_filter(filesize, "filesize")
