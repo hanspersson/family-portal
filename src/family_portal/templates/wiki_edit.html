@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{% if page %}Edit {{ page.title }}{% else %}New page{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if page %}Edit {{ page.title }}{% else %}New wiki page{% endif %}</h1>
+<form action="{% if page %}/wiki/{{ page.slug }}/edit{% else %}/wiki/new{% endif %}" method="post" class="stacked-form">
+  <label>Title
+    <input type="text" name="title" value="{{ page.title if page else '' }}" required />
+  </label>
+  <label>Content (Markdown supported)
+    <textarea name="content_markdown" rows="16">{{ page.content_markdown if page else '' }}</textarea>
+  </label>
+  <button type="submit">Save</button>
+</form>
+{% endblock %}

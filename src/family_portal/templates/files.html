@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Files{% endblock %}
+{% block content %}
+<h1>Shared files</h1>
+
+<section class="card">
+  <h2>Upload</h2>
+  <form action="/files/upload" method="post" enctype="multipart/form-data" class="stacked-form">
+    <label>File
+      <input type="file" name="upload" required />
+    </label>
+    <label>Description
+      <input type="text" name="description" placeholder="e.g. 2026 insurance policy" />
+    </label>
+    <button type="submit">Upload</button>
+  </form>
+</section>
+
+<ul class="clean-list">
+  {% for f in items %}
+  <li class="event-row">
+    <div>
+      <a href="/files/{{ f.id }}/download"><strong>{{ f.original_filename }}</strong></a>
+      <span class="muted">{{ (f.size_bytes / 1024) | round(1) }} KB &middot; uploaded {{ f.uploaded_at.strftime('%d %b %Y') }} by {{ f.uploaded_by.display_name }}</span>
+      {% if f.description %}<p>{{ f.description }}</p>{% endif %}
+    </div>
+    <form action="/files/{{ f.id }}/delete" method="post">
+      <button type="submit" class="link-button">Delete</button>
+    </form>
+  </li>
+  {% else %}
+  <li class="muted">No files uploaded yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

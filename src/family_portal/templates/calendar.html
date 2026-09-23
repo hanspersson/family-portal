@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Calendar{% endblock %}
+{% block content %}
+<div class="page-header">
+  <a href="/calendar?month={{ prev_month }}">&larr;</a>
+  <h1>{{ month_label }}</h1>
+  <a href="/calendar?month={{ next_month }}">&rarr;</a>
+</div>
+
+<ul class="clean-list">
+  {% for e in events %}
+  <li class="event-row">
+    <div>
+      <strong>{{ e.title }}</strong><br />
+      <span class="muted">
+        {% if e.all_day %}{{ e.start_at.strftime('%a %d %b') }} (all day)
+        {% else %}{{ e.start_at.strftime('%a %d %b, %H:%M') }} &ndash; {{ e.end_at.strftime('%H:%M') }}{% endif %}
+        {% if e.location %} &middot; {{ e.location }}{% endif %}
+      </span>
+      {% if e.description %}<p>{{ e.description }}</p>{% endif %}
+    </div>
+    <form action="/calendar/{{ e.id }}/delete" method="post">
+      <button type="submit" class="link-button">Delete</button>
+    </form>
+  </li>
+  {% else %}
+  <li class="muted">No events this month.</li>
+  {% endfor %}
+</ul>
+
+<section class="card">
+  <h2>Add event</h2>
+  <form action="/calendar/new" method="post" class="stacked-form">
+    <label>Title
+      <input type="text" name="title" required />
+    </label>
+    <label>Location
+      <input type="text" name="location" />
+    </label>
+    <div class="two-col">
+      <label>Starts
+        <input type="datetime-local" name="start_at" required />
+      </label>
+      <label>Ends
+        <input type="datetime-local" name="end_at" />
+      </label>
+    </div>
+    <label class="checkbox-label">
+      <input type="checkbox" name="all_day" value="true" /> All day
+    </label>
+    <label>Notes
+      <textarea name="description" rows="2"></textarea>
+    </label>
+    <button type="submit">Add to calendar</button>
+  </form>
+</section>
+{% endblock %}

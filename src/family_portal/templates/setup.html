@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Set up your family portal{% endblock %}
+{% block content %}
+<div class="auth-box">
+  <h1>Welcome</h1>
+  <p>Let's set up your family portal. This creates your household and your admin account.</p>
+  <form action="/setup" method="post" class="stacked-form">
+    <label>Family name
+      <input type="text" name="household_name" placeholder="The Perssons" required />
+    </label>
+    <label>Your name
+      <input type="text" name="display_name" placeholder="Hans" required />
+    </label>
+    <label>Username
+      <input type="text" name="username" placeholder="hans" required />
+    </label>
+    <label>Password
+      <input type="password" name="password" required minlength="8" />
+    </label>
+    <button type="submit">Create family portal</button>
+  </form>
+</div>
+{% endblock %}

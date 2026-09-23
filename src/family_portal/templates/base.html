@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Family Portal{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  {% if user %}
+  <header class="topbar">
+    <a class="brand" href="/">Family Portal</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/calendar">Calendar</a>
+      <a href="/wiki">Wiki</a>
+      <a href="/files">Files</a>
+      <a href="/members">Family</a>
+    </nav>
+    <form action="/logout" method="post" class="logout-form">
+      <span class="whoami">{{ user.display_name }}</span>
+      <button type="submit">Log out</button>
+    </form>
+  </header>
+  {% endif %}
+  <main class="content">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Wiki{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Family Wiki</h1>
+  <a class="button-link" href="/wiki/new">+ New page</a>
+</div>
+<ul class="clean-list">
+  {% for p in pages %}
+  <li>
+    <a href="/wiki/{{ p.slug }}"><strong>{{ p.title }}</strong></a>
+    <span class="muted">updated {{ p.updated_at.strftime('%d %b %Y') }} by {{ p.updated_by.display_name }}</span>
+  </li>
+  {% else %}
+  <li class="muted">No pages yet &mdash; start with a "House rules" or "Emergency contacts" page.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

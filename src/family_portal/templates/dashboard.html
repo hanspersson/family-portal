@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<h1>Hi {{ user.display_name }}</h1>
+
+<div class="card-grid">
+  <section class="card">
+    <h2>Upcoming <a class="pull-right" href="/calendar">See calendar &rarr;</a></h2>
+    {% if upcoming_events %}
+    <ul class="clean-list">
+      {% for e in upcoming_events %}
+      <li>
+        <strong>{{ e.title }}</strong>
+        <span class="muted">{{ e.start_at.strftime('%a %d %b, %H:%M') }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">Nothing on the calendar in the next two weeks.</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Recently edited wiki pages <a class="pull-right" href="/wiki">See wiki &rarr;</a></h2>
+    {% if recent_pages %}
+    <ul class="clean-list">
+      {% for p in recent_pages %}
+      <li><a href="/wiki/{{ p.slug }}">{{ p.title }}</a></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No wiki pages yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Recent files <a class="pull-right" href="/files">See files &rarr;</a></h2>
+    {% if recent_files %}
+    <ul class="clean-list">
+      {% for f in recent_files %}
+      <li><a href="/files/{{ f.id }}/download">{{ f.original_filename }}</a></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No files uploaded yet.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
